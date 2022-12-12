@@ -1,0 +1,36 @@
+{% extends 'base_inbox.html' %}
+
+{% block mailBoxes %}
+    <li class="nav-item">
+        <a href="inbox" class="nav-link link-dark" aria-current="page">
+            <svg class="bi pe-none me-2" width="16" height="16">
+                <use xlink:href="#home"></use>
+            </svg>
+            Входящие
+        </a>
+    </li>
+    <li>
+        <a href="sent" class="nav-link active">
+            <svg class="bi pe-none me-2" width="16" height="16">
+                <use xlink:href="#speedometer2"></use>
+            </svg>
+            Отправленные
+        </a>
+    </li>
+    <li>
+        <a href="spam" class="nav-link link-dark">
+            <svg class="bi pe-none me-2" width="16" height="16">
+                <use xlink:href="#table"></use>
+            </svg>
+            Спам
+        </a>
+    </li>
+    <li>
+        <a href="trash" class="nav-link link-dark">
+            <svg class="bi pe-none me-2" width="16" height="16">
+                <use xlink:href="#grid"></use>
+            </svg>
+            Корзина
+        </a>
+    </li>
+{% endblock %}

@@ -34,3 +34,14 @@
         </a>
     </li>
 {% endblock %}
+
+{% block mail_list %}
+    {% for mail in mails %}
+        <a href="/inbox/{{ mail.id }}" class="list-group-item list-group-item-action py-3 lh-sm" aria-current="true">
+            <div class="d-flex w-100 align-items-center justify-content-between">
+                <strong class="mb-1">От: {{ mail.sender }}</strong>
+            </div>
+            <div class="col-10 mb-1 small">Тема: {{ mail.subject }}</div>
+        </a>
+    {% endfor %}
+{% endblock %}

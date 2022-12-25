@@ -9,6 +9,13 @@
 
         <div class="row">
             <div class="col-1 d-flex flex-column flex-shrink-0 p-3 bg-light" style="width: 280px; height: 100vh">
+                <form method="POST">
+                    <input class="w-100 btn btn-lg btn-primary" type="submit" name="sendNew" value="Написать письмо"
+                           id="sendNew"/>
+                    <p></p>
+                    <input class="w-100 btn btn-lg btn-primary" type="submit" name="updateBD" value="Обновить БД"
+                           id="updatebd"/>
+                </form>
                 <hr>
                 <ul class="nav nav-pills flex-column mb-auto">
                     {% block mailBoxes %}
@@ -18,7 +25,7 @@
 
                 <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle"
                    data-bs-toggle="dropdown" aria-expanded="false">
-                    <strong>{{ email_adress }}</strong>
+                    <strong>{{ email_address }}</strong>
                 </a>
                 <ul class="dropdown-menu text-small shadow">
                     <li><a class="dropdown-item" href="#">Выйти</a></li>
@@ -27,24 +34,21 @@
             </div>
 
             <div class="col-3" style="height: 100vh">
-                <p class="d-flex align-items-center p-3 border-bottom">
-                    <svg class="bi pe-none me-2" width="30" height="24">
-                        <use xlink:href="#bootstrap"></use>
-                    </svg>
-                    <span class="fs-5 fw-semibold">List group</span>
-                </p>
-                <div class="list-group list-group-flush border-bottom scrollarea">
-                    <a href="#" class="list-group-item list-group-item-action py-3 lh-sm" aria-current="true">
-                        <div class="d-flex w-100 align-items-center justify-content-between">
-                            <strong class="mb-1">List group item heading</strong>
-                        </div>
-                        <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and
-                            date.
-                        </div>
-                    </a>
+                <div class="list-group list-group-flush border-bottom" style="overflow-y: scroll; height: 100vh">
+                    {% block mail_list %}
+                    {% endblock %}
                 </div>
             </div>
 
+            <div class="col container">
+                <main class="w-100 position-relative top-0 start-50 translate-middle-x" style="overflow-y: scroll; height: 100vh">
+                    <p class="h5 mb-3 fw-normal">Кому: {{ cur_mail.receiver }}</p>
+                    <p class="h5 mb-3 fw-normal">От кого: {{ cur_mail.sender }}</p>
+                    <p class="h5 mb-3 fw-normal">Тема: {{ cur_mail.subject }}</p>
+                    <p class="h5 mb-3 fw-normal">{{ cur_mail.body|safe }}</p>
+
+                </main>
+            </div>
         </div>
     </div>
 

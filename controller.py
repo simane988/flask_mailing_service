@@ -7,14 +7,17 @@ from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from tqdm import tqdm
+from app import app
+from app import db
+from model import Emails
+
+import base64
 import email
 import smtplib
 import imaplib
 import mimetypes
 import time
-
 import config
-from app import app
 import os
 
 folders_dict = {
@@ -27,7 +30,7 @@ folders_dict = {
 }
 
 
-def send_email(sender, recipient, subject, body_text, is_html=False, attachments=None):
+def send_email(sender, recipient, subject, body_text, is_html=False, attachments=''):
     server = smtplib.SMTP_SSL(app.config['MAIL_SEND_SERVER'], app.config['MAIL_SEND_PORT'])
 
     if app.config['MAIL_USE_TLS']:
@@ -92,7 +95,14 @@ def clean(text):
     return ''.join(c if c.isalnum() else '_' for c in text)
 
 
-def get_email_headers(mail_folder='INBOX'):
+def update_emails(mail_folder='INBOX', update_count=100):
+
+    try:
+        num_rows_deleted = db.session.query(Emails).delete()
+        db.session.commit()
+    except:
+        db.session.rollback()
+
     server = imaplib.IMAP4_SSL(app.config['MAIL_RECEIVE_SERVER'], app.config['MAIL_RECEIVE_PORT'])
 
     try:
@@ -105,8 +115,9 @@ def get_email_headers(mail_folder='INBOX'):
 
         print(messages)
 
-        for i in range(messages, messages - 10, -1):
+        for i in range(messages, messages - update_count, -1):
             res, msg = server.fetch(str(i), '(RFC822)')
+
             for response in msg:
                 if isinstance(response, tuple):
                     # parse a bytes email into a message object
@@ -117,15 +128,41 @@ def get_email_headers(mail_folder='INBOX'):
                         # if it's a bytes, decode to str
                         subject = subject.decode(encoding)
                     # decode email sender
-                    From, encoding = decode_header(msg.get('From'))[0]
-                    if isinstance(From, bytes):
-                        From = From.decode(encoding)
+                    from_address, encoding = decode_header(msg.get('From'))[0]
+                    if isinstance(from_address, bytes):
+                        from_address = from_address.decode(encoding)
                     print('Subject:', subject)
-                    print('From:', From)
+                    print('From:', from_address)
+                    try:
+                        for part in msg.walk():
+                            if part.get_content_maintype() == 'text' and (part.get_content_subtype() in ('plain', 'html')):
+                                body_text = base64.b64decode(part.get_payload()).decode()
+                            else:
+                                body_text =\
+                                    f'At the moment I don\'t know how to display ' \
+                                    f'{part.get_content_maintype()}/{part.get_content_subtype()} message'
+                    except:
+                        body_text = \
+                            f'At the moment I don\'t know how to display {msg.get_content_type()} message'
+
+                    print('Body Text:', body_text)
                     print('=' * 100)
+
+                    db.session.add(Emails(folder=mail_folder, sender=from_address, receiver=app.config['MAIL_USERNAME'],
+                                          subject=subject, body=body_text))
+
+            db.session.commit()
 
     except Exception as _ex:
         print(_ex)
+
+
+def get_all_emails(mail_folder='INBOX', get_count = 25):
+    return Emails.query.filter_by(folder=mail_folder)
+
+
+def get_email(email_id):
+    return Emails.query.get(email_id)
 
 
 def auth(login, password):

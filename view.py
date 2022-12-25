@@ -13,28 +13,49 @@ def index():
         return redirect('auth')
 
 
-@app.route('/inbox')
-def inbox():
-    controller.get_email_headers()
-    return render_template('inbox.html', email_adress=app.config['MAIL_USERNAME'])
+@app.route('/inbox/', methods=['GET', 'POST'])
+@app.route('/inbox/<int:mail_id>', methods=['GET', 'POST'])
+def inbox(mail_id):
+    if 'updateBD' in request.form:
+        controller.update_emails()
+    elif 'sendNew' in request.form:
+        return redirect('/send')
+    mails = controller.get_all_emails()
+    cur_mail = controller.get_email(mail_id)
+    print(cur_mail)
+    return render_template(
+        'inbox.html',
+        email_address=app.config['MAIL_USERNAME'],
+        mails=mails,
+        cur_mail=controller.get_email(mail_id)
+    )
 
 
-@app.route('/sent')
+@app.route('/sent', methods=['GET', 'POST'])
 def sent():
-    controller.get_email_headers('SENT')
-    return render_template('sent.html', email_adress=app.config['MAIL_USERNAME'])
+    if 'updateBD' in request.form:
+        controller.update_emails()
+    elif 'sendNew' in request.form:
+        return redirect('/send')
+    return render_template('sent.html', email_address=app.config['MAIL_USERNAME'])
 
 
-@app.route('/spam')
+@app.route('/spam', methods=['GET', 'POST'])
 def spam():
-    controller.get_email_headers('SPAM')
-    return render_template('spam.html', email_adress=app.config['MAIL_USERNAME'])
+    if 'updateBD' in request.form:
+        controller.update_emails()
+    elif 'sendNew' in request.form:
+        return redirect('/send')
+    return render_template('spam.html', email_address=app.config['MAIL_USERNAME'])
 
 
-@app.route('/trash')
+@app.route('/trash', methods=['GET', 'POST'])
 def trash():
-    controller.get_email_headers('TRASH')
-    return render_template('trash.html', email_adress=app.config['MAIL_USERNAME'])
+    if 'updateBD' in request.form:
+        controller.update_emails()
+    elif 'sendNew' in request.form:
+        return redirect('/send')
+    return render_template('trash.html', email_address=app.config['MAIL_USERNAME'])
 
 
 @app.route('/auth', methods=['GET', 'POST'])
@@ -56,7 +77,7 @@ def logout():
 def send():
     if "submitSend" in request.form:
         controller.send_email(app.config['MAIL_USERNAME'], request.form['sendTo'], request.form['letterSubject'],
-                          request.form['letterText'], False, request.form['letterAttach'])
-        return redirect('inbox')
+                          request.form['letterText'], False)
+        return redirect('inbox/1')
 
     return render_template('send.html', sender=app.config['MAIL_USERNAME'])
